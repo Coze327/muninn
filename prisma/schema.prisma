@@ -34,7 +34,7 @@ model User {
 model Campaign {
   id         String   @id @default(cuid())
   name       String
-  gameSystem String   // "DND5E" | "DAGGERHEART"
+  gameSystem String   // "5E" | "DAGGERHEART"
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

@@ -29,7 +29,7 @@ type CreateCampaignModalProps = {
 };
 
 const gameSystemOptions = [
-  { value: "DND5E", label: "D&D 5th Edition" },
+  { value: "5E", label: "5th Edition" },
   { value: "DAGGERHEART", label: "Daggerheart" },
 ];
 
@@ -44,7 +44,7 @@ export function CreateCampaignModal({
   const form = useForm({
     initialValues: {
       name: "",
-      gameSystem: "DND5E",
+      gameSystem: "5E",
     },
     validate: {
       name: (value) =>

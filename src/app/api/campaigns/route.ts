@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 // Validation schema for creating a campaign
 const createCampaignSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name too long"),
-  gameSystem: z.enum(["DND5E", "DAGGERHEART"], {
+  gameSystem: z.enum(["5E", "DAGGERHEART"], {
     message: "Invalid game system",
   }),
 });

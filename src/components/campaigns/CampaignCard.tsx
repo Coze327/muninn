@@ -29,12 +29,12 @@ type CampaignCardProps = {
 };
 
 const gameSystemLabels: Record<string, string> = {
-  DND5E: 'D&D 5e',
+  '5E': '5e',
   DAGGERHEART: 'Daggerheart',
 };
 
 const gameSystemColors: Record<string, string> = {
-  DND5E: 'red',
+  '5E': 'red',
   DAGGERHEART: 'violet',
 };
 

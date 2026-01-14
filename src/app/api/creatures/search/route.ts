@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
 
-// GET /api/creatures/search?q=goblin&gameSystem=DND5E
+// GET /api/creatures/search?q=goblin&gameSystem=5E
 export async function GET(request: Request) {
   try {
     const session = await auth();

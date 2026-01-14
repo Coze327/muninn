@@ -1,6 +1,6 @@
 /**
  * Common Game System Types
- * Unified interfaces that work across D&D 5e and Daggerheart
+ * Unified interfaces that work across 5th Edition and Daggerheart
  */
 
 import type { DnD5eCreature, DnD5eCombatCreature, DnD5eSpell } from "./dnd5e";
@@ -10,15 +10,15 @@ import type { DaggerheartCreature, DaggerheartCombatCreature } from "./daggerhea
 // GAME SYSTEM IDENTIFIERS
 // ============================================
 
-export type GameSystem = "DND5E" | "DAGGERHEART";
+export type GameSystem = "5E" | "DAGGERHEART";
 
 export const GAME_SYSTEM_LABELS: Record<GameSystem, string> = {
-  DND5E: "D&D 5th Edition",
+  "5E": "5th Edition",
   DAGGERHEART: "Daggerheart",
 };
 
 export const GAME_SYSTEM_SHORT_LABELS: Record<GameSystem, string> = {
-  DND5E: "D&D 5e",
+  "5E": "5e",
   DAGGERHEART: "Daggerheart",
 };
 
@@ -164,7 +164,7 @@ export function advanceTurn(
 // STATUS EFFECTS
 // ============================================
 
-export const DND5E_CONDITIONS = [
+export const FIFTH_EDITION_CONDITIONS = [
   "Blinded",
   "Charmed",
   "Deafened",
@@ -187,7 +187,7 @@ export const DND5E_CONDITIONS = [
   "Exhaustion 6",
 ] as const;
 
-export type DnD5eCondition = (typeof DND5E_CONDITIONS)[number];
+export type FifthEditionCondition = (typeof FIFTH_EDITION_CONDITIONS)[number];
 
 export const DAGGERHEART_CONDITIONS = [
   "Frightened",
@@ -204,8 +204,8 @@ export type DaggerheartCondition = (typeof DAGGERHEART_CONDITIONS)[number];
  */
 export function getConditionsForSystem(system: GameSystem): readonly string[] {
   switch (system) {
-    case "DND5E":
-      return DND5E_CONDITIONS;
+    case "5E":
+      return FIFTH_EDITION_CONDITIONS;
     case "DAGGERHEART":
       return DAGGERHEART_CONDITIONS;
   }

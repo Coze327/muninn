@@ -16,9 +16,11 @@ import {
   Alert,
   Box,
   Table,
-  Accordion,
+  Tabs,
   Breadcrumbs,
   Anchor,
+  TextInput,
+  Pagination,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { CreateCombatModal } from '@/components/combat/CreateCombatModal';
@@ -80,7 +82,7 @@ type Campaign = {
 };
 
 const gameSystemLabels: Record<string, string> = {
-  DND5E: 'D&D 5e',
+  '5E': '5e',
   DAGGERHEART: 'Daggerheart',
 };
 
@@ -143,6 +145,16 @@ export default function CampaignDetailPage() {
   // Selected NPC and template data for modals
   const [selectedNPC, setSelectedNPC] = useState<CustomCreature | null>(null);
   const [templateData, setTemplateData] = useState<DnD5eCreature | null>(null);
+
+  // Search and pagination for PCs
+  const [pcSearchQuery, setPcSearchQuery] = useState('');
+  const [pcPage, setPcPage] = useState(1);
+  const PC_PAGE_SIZE = 5;
+
+  // Search and pagination for NPCs
+  const [npcSearchQuery, setNpcSearchQuery] = useState('');
+  const [npcPage, setNpcPage] = useState(1);
+  const NPC_PAGE_SIZE = 5;
 
   const fetchCampaign = async () => {
     try {
@@ -401,6 +413,47 @@ export default function CampaignDetailPage() {
     }
   };
 
+  // Filter and paginate Player Characters
+  const filteredPCs = playerCharacters.filter((pc) => {
+    const searchLower = pcSearchQuery.toLowerCase();
+    let stats;
+    try {
+      stats = JSON.parse(pc.stats);
+    } catch {
+      stats = {};
+    }
+    return (
+      pc.name.toLowerCase().includes(searchLower) ||
+      (stats.race || '').toLowerCase().includes(searchLower) ||
+      (stats.class || '').toLowerCase().includes(searchLower)
+    );
+  });
+  const totalPCPages = Math.ceil(filteredPCs.length / PC_PAGE_SIZE);
+  const paginatedPCs = filteredPCs.slice(
+    (pcPage - 1) * PC_PAGE_SIZE,
+    pcPage * PC_PAGE_SIZE
+  );
+
+  // Filter and paginate Custom NPCs
+  const filteredNPCs = customNPCs.filter((npc) => {
+    const searchLower = npcSearchQuery.toLowerCase();
+    let stats: Partial<DnD5eCreature>;
+    try {
+      stats = JSON.parse(npc.stats);
+    } catch {
+      stats = {};
+    }
+    return (
+      npc.name.toLowerCase().includes(searchLower) ||
+      (stats.type || '').toLowerCase().includes(searchLower)
+    );
+  });
+  const totalNPCPages = Math.ceil(filteredNPCs.length / NPC_PAGE_SIZE);
+  const paginatedNPCs = filteredNPCs.slice(
+    (npcPage - 1) * NPC_PAGE_SIZE,
+    npcPage * NPC_PAGE_SIZE
+  );
+
   // Navigation items for this campaign
   const navItems = [
     {
@@ -425,7 +478,7 @@ export default function CampaignDetailPage() {
 
   if (loading) {
     return (
-      <AppShellLayout sidebarTitle="Loading..." navItems={navItems}>
+      <AppShellLayout sidebarTitle='Loading...' navItems={navItems}>
         <Center h='calc(100vh - 60px)'>
           <Loader size='lg' />
         </Center>
@@ -435,7 +488,7 @@ export default function CampaignDetailPage() {
 
   if (error || !campaign) {
     return (
-      <AppShellLayout sidebarTitle="Error" navItems={navItems}>
+      <AppShellLayout sidebarTitle='Error' navItems={navItems}>
         <Container size='lg' py='xl'>
           <Alert color='red'>{error || 'Campaign not found'}</Alert>
         </Container>
@@ -532,12 +585,11 @@ export default function CampaignDetailPage() {
   return (
     <AppShellLayout
       sidebarTitle={campaign.name}
-      sidebarSubtitle={gameSystemLabels[campaign.gameSystem] || campaign.gameSystem}
-      navItems={navItems}
-      headerCenter={
-        <Button onClick={openCreateModal}>+ New Encounter</Button>
+      sidebarSubtitle={
+        gameSystemLabels[campaign.gameSystem] || campaign.gameSystem
       }
-    >
+      navItems={navItems}
+      headerCenter={<Button onClick={openCreateModal}>+ New Encounter</Button>}>
       <Container size='lg' py='xl'>
         {/* Breadcrumbs */}
         <Breadcrumbs mb='md'>
@@ -552,128 +604,169 @@ export default function CampaignDetailPage() {
           <div>
             <Group gap='sm' align='center'>
               <Title order={1}>{campaign.name}</Title>
-              <Badge color={campaign.gameSystem === 'DND5E' ? 'red' : 'violet'}>
+              <Badge color={campaign.gameSystem === '5E' ? 'red' : 'violet'}>
                 {gameSystemLabels[campaign.gameSystem] || campaign.gameSystem}
               </Badge>
             </Group>
           </div>
         </Group>
 
-      {/* Player Characters Section */}
-      <Box mb='xl'>
-        <Group justify='space-between' mb='md'>
-          <Title order={2} size='h3'>
-            Player Characters*
-          </Title>
-          <Button onClick={openCreatePCModal} size='sm'>
-            + Add PC
-          </Button>
-        </Group>
+        {/* Player Characters & Custom NPCs Section */}
+        <Box mb='xl'>
+          <Tabs defaultValue='pcs'>
+            <Tabs.List>
+              <Tabs.Tab value='pcs'>
+                Player Characters{' '}
+                {playerCharacters.length > 0 && `(${playerCharacters.length})`}
+              </Tabs.Tab>
+              <Tabs.Tab value='npcs'>
+                Custom NPCs {customNPCs.length > 0 && `(${customNPCs.length})`}
+              </Tabs.Tab>
+            </Tabs.List>
 
-        {playerCharacters.length === 0 ? (
-          <Card withBorder p='lg' ta='center'>
-            <Stack align='center' gap='sm'>
-              <Text c='dimmed' size='sm'>
-                No player characters yet
-              </Text>
-              <Button onClick={openCreatePCModal} size='sm' variant='light'>
-                + Add PC
-              </Button>
-            </Stack>
-          </Card>
-        ) : (
-          <Table highlightOnHover withTableBorder>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Race</Table.Th>
-                <Table.Th>Class</Table.Th>
-                <Table.Th>Level</Table.Th>
-                <Table.Th>HP</Table.Th>
-                <Table.Th>AC</Table.Th>
-                <Table.Th>STR</Table.Th>
-                <Table.Th>DEX</Table.Th>
-                <Table.Th>CON</Table.Th>
-                <Table.Th>Passive Perception</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {playerCharacters.map((pc) => {
-                let stats;
-                try {
-                  stats = JSON.parse(pc.stats);
-                } catch {
-                  stats = {};
-                }
-                const str = stats.attributes?.strength || 10;
-                const dex = stats.attributes?.dexterity || 10;
-                const con = stats.attributes?.constitution || 10;
-                const wis = stats.attributes?.wisdom || 10;
-                const wisModifier = Math.floor((wis - 10) / 2);
-                const passivePerception = 10 + wisModifier;
-
-                return (
-                  <Table.Tr
-                    key={pc.id}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => handlePCClick(pc)}>
-                    <Table.Td fw={500}>{pc.name}</Table.Td>
-                    <Table.Td>{stats.race || '—'}</Table.Td>
-                    <Table.Td>{stats.class || '—'}</Table.Td>
-                    <Table.Td>
-                      <Badge variant='light' size='sm'>
-                        {stats.level || 1}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>{stats.hitPoints || '—'}</Table.Td>
-                    <Table.Td>{stats.armorClass || '—'}</Table.Td>
-                    <Table.Td>{str}</Table.Td>
-                    <Table.Td>{dex}</Table.Td>
-                    <Table.Td>{con}</Table.Td>
-                    <Table.Td>{passivePerception}</Table.Td>
-                  </Table.Tr>
-                );
-              })}
-            </Table.Tbody>
-          </Table>
-        )}
-      </Box>
-
-      {/* Custom NPCs Section */}
-      <Box mb='xl'>
-        <Accordion>
-          <Accordion.Item value='custom-npcs'>
-            <Accordion.Control>
-              <Group justify='space-between' pr='md'>
-                <Title order={2} size='h3'>
-                  Custom NPCs{' '}
-                  {customNPCs.length > 0 && `(${customNPCs.length})`}
-                </Title>
+            <Tabs.Panel value='pcs' pt='md'>
+              <Group justify='space-between' mb='md'>
+                <TextInput
+                  placeholder='Search by name, race, or class...'
+                  value={pcSearchQuery}
+                  onChange={(e) => {
+                    setPcSearchQuery(e.target.value);
+                    setPcPage(1); // Reset to first page on search
+                  }}
+                  style={{ flex: 1, maxWidth: 400 }}
+                />
+                <Button onClick={openCreatePCModal} size='sm'>
+                  + Add PC
+                </Button>
               </Group>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Stack gap='md'>
-                <Group justify='flex-end'>
-                  <Button onClick={openCreateNPCModal} size='sm'>
-                    + Create NPC
-                  </Button>
-                </Group>
 
-                {customNPCs.length === 0 ? (
-                  <Card withBorder p='lg' ta='center'>
-                    <Stack align='center' gap='sm'>
-                      <Text c='dimmed' size='sm'>
-                        No custom NPCs yet
-                      </Text>
-                      <Button
-                        onClick={openCreateNPCModal}
-                        size='sm'
-                        variant='light'>
-                        + Create NPC
-                      </Button>
-                    </Stack>
-                  </Card>
-                ) : (
+              {playerCharacters.length === 0 ? (
+                <Card withBorder p='lg' ta='center'>
+                  <Stack align='center' gap='sm'>
+                    <Text c='dimmed' size='sm'>
+                      No player characters yet
+                    </Text>
+                    <Button
+                      onClick={openCreatePCModal}
+                      size='sm'
+                      variant='light'>
+                      + Add PC
+                    </Button>
+                  </Stack>
+                </Card>
+              ) : filteredPCs.length === 0 ? (
+                <Card withBorder p='lg' ta='center'>
+                  <Text c='dimmed' size='sm'>
+                    No player characters match your search
+                  </Text>
+                </Card>
+              ) : (
+                <Stack gap='md'>
+                  <Table highlightOnHover withTableBorder>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Name</Table.Th>
+                        <Table.Th>Race</Table.Th>
+                        <Table.Th>Class</Table.Th>
+                        <Table.Th>Level</Table.Th>
+                        <Table.Th>HP</Table.Th>
+                        <Table.Th>AC</Table.Th>
+                        <Table.Th>STR</Table.Th>
+                        <Table.Th>DEX</Table.Th>
+                        <Table.Th>CON</Table.Th>
+                        <Table.Th>Passive Perception</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {paginatedPCs.map((pc) => {
+                        let stats;
+                        try {
+                          stats = JSON.parse(pc.stats);
+                        } catch {
+                          stats = {};
+                        }
+                        const str = stats.attributes?.strength || 10;
+                        const dex = stats.attributes?.dexterity || 10;
+                        const con = stats.attributes?.constitution || 10;
+                        const wis = stats.attributes?.wisdom || 10;
+                        const wisModifier = Math.floor((wis - 10) / 2);
+                        const passivePerception = 10 + wisModifier;
+
+                        return (
+                          <Table.Tr
+                            key={pc.id}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => handlePCClick(pc)}>
+                            <Table.Td fw={500}>{pc.name}</Table.Td>
+                            <Table.Td>{stats.race || '—'}</Table.Td>
+                            <Table.Td>{stats.class || '—'}</Table.Td>
+                            <Table.Td>
+                              <Badge variant='light' size='sm'>
+                                {stats.level || 1}
+                              </Badge>
+                            </Table.Td>
+                            <Table.Td>{stats.hitPoints || '—'}</Table.Td>
+                            <Table.Td>{stats.armorClass || '—'}</Table.Td>
+                            <Table.Td>{str}</Table.Td>
+                            <Table.Td>{dex}</Table.Td>
+                            <Table.Td>{con}</Table.Td>
+                            <Table.Td>{passivePerception}</Table.Td>
+                          </Table.Tr>
+                        );
+                      })}
+                    </Table.Tbody>
+                  </Table>
+                  {totalPCPages > 1 && (
+                    <Group justify='center'>
+                      <Pagination
+                        total={totalPCPages}
+                        value={pcPage}
+                        onChange={setPcPage}
+                      />
+                    </Group>
+                  )}
+                </Stack>
+              )}
+            </Tabs.Panel>
+
+            <Tabs.Panel value='npcs' pt='md'>
+              <Group justify='space-between' mb='md'>
+                <TextInput
+                  placeholder='Search by name or type...'
+                  value={npcSearchQuery}
+                  onChange={(e) => {
+                    setNpcSearchQuery(e.target.value);
+                    setNpcPage(1); // Reset to first page on search
+                  }}
+                  style={{ flex: 1, maxWidth: 400 }}
+                />
+                <Button onClick={openCreateNPCModal} size='sm'>
+                  + Create NPC
+                </Button>
+              </Group>
+
+              {customNPCs.length === 0 ? (
+                <Card withBorder p='lg' ta='center'>
+                  <Stack align='center' gap='sm'>
+                    <Text c='dimmed' size='sm'>
+                      No custom NPCs yet
+                    </Text>
+                    <Button
+                      onClick={openCreateNPCModal}
+                      size='sm'
+                      variant='light'>
+                      + Create NPC
+                    </Button>
+                  </Stack>
+                </Card>
+              ) : filteredNPCs.length === 0 ? (
+                <Card withBorder p='lg' ta='center'>
+                  <Text c='dimmed' size='sm'>
+                    No custom NPCs match your search
+                  </Text>
+                </Card>
+              ) : (
+                <Stack gap='md'>
                   <Table highlightOnHover withTableBorder>
                     <Table.Thead>
                       <Table.Tr>
@@ -690,7 +783,7 @@ export default function CampaignDetailPage() {
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
-                      {customNPCs.map((npc) => {
+                      {paginatedNPCs.map((npc) => {
                         let stats: Partial<DnD5eCreature>;
                         try {
                           stats = JSON.parse(npc.stats);
@@ -742,103 +835,111 @@ export default function CampaignDetailPage() {
                       })}
                     </Table.Tbody>
                   </Table>
-                )}
-              </Stack>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-      </Box>
+                  {totalNPCPages > 1 && (
+                    <Group justify='center'>
+                      <Pagination
+                        total={totalNPCPages}
+                        value={npcPage}
+                        onChange={setNpcPage}
+                      />
+                    </Group>
+                  )}
+                </Stack>
+              )}
+            </Tabs.Panel>
+          </Tabs>
+        </Box>
 
-      {/* Encounters Section */}
-      <Group justify='space-between' mb='md'>
-        <Title order={2} size='h3'>
-          Encounters
-        </Title>
-      </Group>
+        {/* Encounters Section */}
+        <Group justify='space-between' mb='md'>
+          <Title order={2} size='h3'>
+            Encounters
+          </Title>
+        </Group>
 
-      {/* Combat List */}
-      {campaign.combats.length === 0 ? (
-        <Card withBorder p='lg' ta='center'>
-          <Stack align='center' gap='sm'>
-            <Text c='dimmed' size='sm'>
-              No encounters yet
-            </Text>
-            <Button onClick={openCreateModal} size='sm' variant='light'>
-              + New Encounter
-            </Button>
-          </Stack>
-        </Card>
-      ) : (
-        <>
-          {renderSection('Active', activeCombats)}
-          {renderSection('Prepared', prepCombats)}
-          {renderSection('Completed', completedCombats)}
-        </>
-      )}
+        {/* Combat List */}
+        {campaign.combats.length === 0 ? (
+          <Card withBorder p='lg' ta='center'>
+            <Stack align='center' gap='sm'>
+              <Text c='dimmed' size='sm'>
+                No encounters yet
+              </Text>
+              <Button onClick={openCreateModal} size='sm' variant='light'>
+                + New Encounter
+              </Button>
+            </Stack>
+          </Card>
+        ) : (
+          <>
+            {renderSection('Active', activeCombats)}
+            {renderSection('Prepared', prepCombats)}
+            {renderSection('Completed', completedCombats)}
+          </>
+        )}
 
-      {/* Modals */}
-      <CreateCombatModal
-        opened={createModalOpened}
-        onClose={closeCreateModal}
-        onCreated={handleCombatCreated}
-        campaignId={campaignId}
-      />
+        {/* Modals */}
+        <CreateCombatModal
+          opened={createModalOpened}
+          onClose={closeCreateModal}
+          onCreated={handleCombatCreated}
+          campaignId={campaignId}
+        />
 
-      <EditCombatModal
-        opened={editModalOpened}
-        onClose={closeEditModal}
-        onUpdated={handleCombatUpdated}
-        onDeleted={handleCombatDeleted}
-        combat={selectedCombat}
-      />
+        <EditCombatModal
+          opened={editModalOpened}
+          onClose={closeEditModal}
+          onUpdated={handleCombatUpdated}
+          onDeleted={handleCombatDeleted}
+          combat={selectedCombat}
+        />
 
-      <ActivateCombatModal
-        opened={activateModalOpened}
-        onClose={closeActivateModal}
-        onActivated={handleCombatActivated}
-        combatToActivate={combatToActivate}
-        activeCombat={activeCombat}
-      />
+        <ActivateCombatModal
+          opened={activateModalOpened}
+          onClose={closeActivateModal}
+          onActivated={handleCombatActivated}
+          combatToActivate={combatToActivate}
+          activeCombat={activeCombat}
+        />
 
-      <CreatePCModal
-        opened={createPCModalOpened}
-        onClose={closeCreatePCModal}
-        onCreated={handlePCCreated}
-        gameSystem={campaign.gameSystem}
-        campaignId={campaignId}
-      />
+        <CreatePCModal
+          opened={createPCModalOpened}
+          onClose={closeCreatePCModal}
+          onCreated={handlePCCreated}
+          gameSystem={campaign.gameSystem}
+          campaignId={campaignId}
+        />
 
-      <EditPCModal
-        opened={editPCModalOpened}
-        onClose={closeEditPCModal}
-        onUpdated={handlePCUpdated}
-        onDeleted={handlePCDeleted}
-        playerCharacter={selectedPC}
-      />
+        <EditPCModal
+          opened={editPCModalOpened}
+          onClose={closeEditPCModal}
+          onUpdated={handlePCUpdated}
+          onDeleted={handlePCDeleted}
+          playerCharacter={selectedPC}
+        />
 
-      <CreateNPCModal
-        opened={createNPCModalOpened}
-        onClose={() => {
-          closeCreateNPCModal();
-          setTemplateData(null);
-        }}
-        onCreated={handleNPCCreated}
-        gameSystem={campaign.gameSystem}
-        templateData={templateData}
-      />
+        <CreateNPCModal
+          opened={createNPCModalOpened}
+          onClose={() => {
+            closeCreateNPCModal();
+            setTemplateData(null);
+          }}
+          onCreated={handleNPCCreated}
+          gameSystem={campaign.gameSystem}
+          templateData={templateData}
+        />
 
-      <EditNPCModal
-        opened={editNPCModalOpened}
-        onClose={closeEditNPCModal}
-        onUpdated={handleNPCUpdated}
-        onDeleted={handleNPCDeleted}
-        onUseAsTemplate={(stats) => {
-          setTemplateData(stats);
-          closeEditNPCModal();
-          openCreateNPCModal();
-        }}
-        customNPC={selectedNPC}
-      />
+        <EditNPCModal
+          opened={editNPCModalOpened}
+          onClose={closeEditNPCModal}
+          onUpdated={handleNPCUpdated}
+          onDeleted={handleNPCDeleted}
+          onUseAsTemplate={(stats) => {
+            setTemplateData(stats);
+            closeEditNPCModal();
+            openCreateNPCModal();
+          }}
+          customNPC={selectedNPC}
+        />
       </Container>
     </AppShellLayout>
   );

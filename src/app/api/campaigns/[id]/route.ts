@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db/prisma";
 const updateCampaignSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name too long").optional(),
   gameSystem: z
-    .enum(["DND5E", "DAGGERHEART"], {
+    .enum(["5E", "DAGGERHEART"], {
       message: "Invalid game system",
     })
     .optional(),

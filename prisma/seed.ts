@@ -40,7 +40,7 @@ async function seedCreatures() {
       where: { index: creature.index },
       update: {
         name: creature.name,
-        gameSystem: "DND5E",
+        gameSystem: "5E",
         size: creature.size,
         creatureType: creature.type,
         challengeRating: creature.challenge_rating,
@@ -49,7 +49,7 @@ async function seedCreatures() {
       create: {
         index: creature.index,
         name: creature.name,
-        gameSystem: "DND5E",
+        gameSystem: "5E",
         size: creature.size,
         creatureType: creature.type,
         challengeRating: creature.challenge_rating,
@@ -76,7 +76,7 @@ async function seedSpells() {
         name: spell.name,
         level: spell.level,
         school: spell.school?.index ?? "unknown",
-        gameSystem: "DND5E",
+        gameSystem: "5E",
         stats: JSON.stringify(spell), // Store the entire spell object
       },
       create: {
@@ -84,7 +84,7 @@ async function seedSpells() {
         name: spell.name,
         level: spell.level,
         school: spell.school?.index ?? "unknown",
-        gameSystem: "DND5E",
+        gameSystem: "5E",
         stats: JSON.stringify(spell), // Store the entire spell object
       },
     });

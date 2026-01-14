@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
 
-// GET /api/player-characters?gameSystem=DND5E&campaignId=xxx
+// GET /api/player-characters?gameSystem=5E&campaignId=xxx
 export async function GET(request: Request) {
   try {
     const session = await auth();
