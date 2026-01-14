@@ -17,12 +17,9 @@ body {
   position: relative;
 }
 
-.initiative-card:hover .delete-btn {
-  opacity: 1 !important;
-}
-
 /* Delete button hover state */
 .delete-btn:hover {
+  opacity: 1 !important;
   transform: scale(1.15) !important;
   background: rgba(220, 38, 38, 1) !important;
 }
