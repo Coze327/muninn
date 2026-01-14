@@ -10,6 +10,8 @@ import {
   NumberInput,
   Grid,
   Select,
+  Alert,
+  Text,
 } from '@mantine/core';
 
 type PlayerCharacter = {
@@ -183,7 +185,9 @@ export function CreatePCModal({
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
           {error && (
-            <div style={{ color: 'red', fontSize: '0.875rem' }}>{error}</div>
+            <Alert color="red" variant="light">
+              {error}
+            </Alert>
           )}
 
           <TextInput
@@ -253,9 +257,9 @@ export function CreatePCModal({
 
           {/* Ability Scores */}
           <div>
-            <div style={{ fontWeight: 500, marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+            <Text size="sm" fw={500} mb="xs">
               Ability Scores
-            </div>
+            </Text>
             <Grid>
               <Grid.Col span={4}>
                 <NumberInput
@@ -316,9 +320,9 @@ export function CreatePCModal({
 
           {/* Passive Skills */}
           <div>
-            <div style={{ fontWeight: 500, marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+            <Text size="sm" fw={500} mb="xs">
               Passive Skills
-            </div>
+            </Text>
             <Grid>
               <Grid.Col span={4}>
                 <NumberInput
@@ -348,11 +352,11 @@ export function CreatePCModal({
           </div>
 
           <Group justify="flex-end" mt="md">
-            <Button variant="subtle" onClick={handleClose} disabled={loading}>
+            <Button variant="default" onClick={handleClose} disabled={loading}>
               Cancel
             </Button>
             <Button type="submit" loading={loading}>
-              Create
+              Create PC
             </Button>
           </Group>
         </Stack>

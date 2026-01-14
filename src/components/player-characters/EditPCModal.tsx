@@ -10,6 +10,8 @@ import {
   NumberInput,
   Grid,
   Select,
+  Alert,
+  Text,
 } from '@mantine/core';
 
 type PlayerCharacter = {
@@ -218,42 +220,12 @@ export function EditPCModal({
 
   const handleClose = () => {
     setShowDeleteConfirm(false);
+    setDeleting(false);
     setError(null);
     onClose();
   };
 
   if (!playerCharacter) return null;
-
-  if (showDeleteConfirm) {
-    return (
-      <Modal
-        opened={opened}
-        onClose={handleClose}
-        title="Delete Player Character"
-        size="sm">
-        <Stack gap="md">
-          {error && (
-            <div style={{ color: 'red', fontSize: '0.875rem' }}>{error}</div>
-          )}
-          <div>
-            Are you sure you want to delete <strong>{playerCharacter.name}</strong>?
-            This action cannot be undone.
-          </div>
-          <Group justify="flex-end">
-            <Button
-              variant="subtle"
-              onClick={() => setShowDeleteConfirm(false)}
-              disabled={deleting}>
-              Cancel
-            </Button>
-            <Button color="red" onClick={handleDelete} loading={deleting}>
-              Delete
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-    );
-  }
 
   return (
     <Modal
@@ -264,7 +236,9 @@ export function EditPCModal({
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
           {error && (
-            <div style={{ color: 'red', fontSize: '0.875rem' }}>{error}</div>
+            <Alert color="red" variant="light">
+              {error}
+            </Alert>
           )}
 
           <TextInput
@@ -334,9 +308,9 @@ export function EditPCModal({
 
           {/* Ability Scores */}
           <div>
-            <div style={{ fontWeight: 500, marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+            <Text size="sm" fw={500} mb="xs">
               Ability Scores
-            </div>
+            </Text>
             <Grid>
               <Grid.Col span={4}>
                 <NumberInput
@@ -397,9 +371,9 @@ export function EditPCModal({
 
           {/* Passive Skills */}
           <div>
-            <div style={{ fontWeight: 500, marginBottom: '0.5rem', fontSize: '0.875rem' }}>
+            <Text size="sm" fw={500} mb="xs">
               Passive Skills
-            </div>
+            </Text>
             <Grid>
               <Grid.Col span={4}>
                 <NumberInput
@@ -429,21 +403,40 @@ export function EditPCModal({
           </div>
 
           <Group justify="space-between" mt="md">
-            <Button
-              variant="subtle"
-              color="red"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={loading}>
-              Delete PC
-            </Button>
-            <Group>
-              <Button variant="subtle" onClick={handleClose} disabled={loading}>
-                Cancel
-              </Button>
-              <Button type="submit" loading={loading}>
-                Save
-              </Button>
-            </Group>
+            {!showDeleteConfirm ? (
+              <>
+                <Button
+                  color="red"
+                  variant="light"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={loading}
+                >
+                  Delete PC
+                </Button>
+                <Group>
+                  <Button variant="default" onClick={handleClose} disabled={loading}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" loading={loading}>
+                    Save Changes
+                  </Button>
+                </Group>
+              </>
+            ) : (
+              <>
+                <Text size="sm" c="dimmed">
+                  Are you sure you want to delete this PC?
+                </Text>
+                <Group>
+                  <Button variant="default" onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
+                    Cancel
+                  </Button>
+                  <Button color="red" onClick={handleDelete} loading={deleting}>
+                    Confirm Delete
+                  </Button>
+                </Group>
+              </>
+            )}
           </Group>
         </Stack>
       </form>

@@ -11,9 +11,10 @@ import { generateIndex, getProficiencyFromCR, getXPFromCR } from '@/lib/utils/np
 
 export interface UseNPCFormOptions {
   templateData?: DnD5eCreature | null;
+  isEditing?: boolean;
 }
 
-export function useNPCForm({ templateData }: UseNPCFormOptions = {}) {
+export function useNPCForm({ templateData, isEditing = false }: UseNPCFormOptions = {}) {
   // Basic Info
   const [name, setName] = useState('');
   const [index, setIndex] = useState('');
@@ -154,10 +155,15 @@ export function useNPCForm({ templateData }: UseNPCFormOptions = {}) {
   }, [cr, templateData]);
 
   // Function to populate all fields from template data
-  const populateFromTemplate = (data: DnD5eCreature) => {
-    const copyName = `${data.name} COPY`;
-    setName(copyName);
-    setIndex(generateIndex(copyName));
+  const populateFromTemplate = (data: DnD5eCreature, preserveNameAndIndex = false) => {
+    if (preserveNameAndIndex) {
+      setName(data.name);
+      setIndex(data.index);
+    } else {
+      const copyName = `${data.name} COPY`;
+      setName(copyName);
+      setIndex(generateIndex(copyName));
+    }
     setSize(data.size);
     setType(data.type);
     setAlignment(data.alignment);
@@ -275,9 +281,9 @@ export function useNPCForm({ templateData }: UseNPCFormOptions = {}) {
   // Pre-populate from template data prop
   useEffect(() => {
     if (templateData) {
-      populateFromTemplate(templateData);
+      populateFromTemplate(templateData, isEditing);
     }
-  }, [templateData]);
+  }, [templateData, isEditing]);
 
   // Reset all fields
   const resetForm = () => {

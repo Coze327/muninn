@@ -149,12 +149,12 @@ export default function CampaignDetailPage() {
   // Search and pagination for PCs
   const [pcSearchQuery, setPcSearchQuery] = useState('');
   const [pcPage, setPcPage] = useState(1);
-  const PC_PAGE_SIZE = 5;
+  const PC_PAGE_SIZE = 6;
 
   // Search and pagination for NPCs
   const [npcSearchQuery, setNpcSearchQuery] = useState('');
   const [npcPage, setNpcPage] = useState(1);
-  const NPC_PAGE_SIZE = 5;
+  const NPC_PAGE_SIZE = 10;
 
   const fetchCampaign = async () => {
     try {
@@ -933,11 +933,6 @@ export default function CampaignDetailPage() {
           onClose={closeEditNPCModal}
           onUpdated={handleNPCUpdated}
           onDeleted={handleNPCDeleted}
-          onUseAsTemplate={(stats) => {
-            setTemplateData(stats);
-            closeEditNPCModal();
-            openCreateNPCModal();
-          }}
           customNPC={selectedNPC}
         />
       </Container>
