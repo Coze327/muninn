@@ -491,6 +491,14 @@ export default function CombatTrackerPage() {
             >
               📜
             </ActionIcon>
+            <ActionIcon
+              variant="subtle"
+              onClick={() => router.push("/profile")}
+              size="lg"
+              title="Profile"
+            >
+              👤
+            </ActionIcon>
           </Group>
         </Group>
       </AppShell.Header>
@@ -524,6 +532,14 @@ export default function CombatTrackerPage() {
             onClick={() => {
               closeNav();
               router.push("/campaigns");
+            }}
+          />
+          <NavLink
+            label="Profile"
+            leftSection={<Text>👤</Text>}
+            onClick={() => {
+              closeNav();
+              router.push("/profile");
             }}
           />
           <NavLink
