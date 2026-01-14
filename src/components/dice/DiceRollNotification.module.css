@@ -1,0 +1,112 @@
+/* Simple fade in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Base notification container */
+.notification {
+  animation: fadeIn 0.2s ease-out;
+  padding: 12px 32px 16px 20px;
+  border-radius: 8px;
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  min-width: 280px;
+  max-width: 320px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Header with creature name and roll type */
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.creatureName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--mantine-color-text);
+}
+
+.rollName {
+  font-size: 0.85rem;
+  color: var(--mantine-color-dimmed);
+  font-weight: 400;
+}
+
+/* Dice breakdown section */
+.breakdown {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: var(--mantine-color-dimmed);
+  margin: 8px 0;
+}
+
+/* Total display */
+.total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.totalLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--mantine-color-dimmed);
+}
+
+.totalValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mantine-color-text);
+}
+
+/* Critical Success (Natural 20) */
+.criticalSuccess {
+  background: #d1fae5;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+[data-mantine-color-scheme="dark"] .criticalSuccess {
+  background: #064e3b;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.criticalSuccess .totalValue {
+  color: #059669;
+}
+
+[data-mantine-color-scheme="dark"] .criticalSuccess .totalValue {
+  color: #34d399;
+}
+
+/* Critical Fail (Natural 1) */
+.criticalFail {
+  background: #fee2e2;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+[data-mantine-color-scheme="dark"] .criticalFail {
+  background: #7f1d1d;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.criticalFail .totalValue {
+  color: #dc2626;
+}
+
+[data-mantine-color-scheme="dark"] .criticalFail .totalValue {
+  color: #f87171;
+}

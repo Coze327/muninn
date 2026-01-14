@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTH
+// ============================================
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations (we'll add these as we create other models)
+  campaigns        Campaign[]
+  playerCharacters PlayerCharacter[]
+  customCreatures  CustomCreature[]
+}
+
+// ============================================
+// CAMPAIGNS & COMBAT
+// ============================================
+
+model Campaign {
+  id         String   @id @default(cuid())
+  name       String
+  gameSystem String   // "DND5E" | "DAGGERHEART"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relation to User (many campaigns belong to one user)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relation to Combats (one campaign has many combats)
+  combats Combat[]
+
+  // Relation to PlayerCharacters (tracks which PCs were created in this campaign)
+  playerCharacters PlayerCharacter[]
+
+  @@index([userId])
+}
+
+model Combat {
+  id        String   @id @default(cuid())
+  name      String?
+  status    String   @default("PREP") // "PREP" | "ACTIVE" | "COMPLETED"
+  round     Int      @default(1)
+  turnIndex Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relation to Campaign
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  // Relation to CombatCreatures
+  creatures CombatCreature[]
+
+  @@index([campaignId])
+}
+
+model CombatCreature {
+  id                String   @id @default(cuid())
+  name              String
+  identifier        String?  // Extra label (e.g., "Boss", "Alpha", familiar name)
+  initiative        Int
+  currentHp         Int
+  maxHp             Int
+  armorClass        Int
+  tokenColor        String?
+  statusEffects     String   @default("[]")  // JSON array of strings
+  isConcentrating   Boolean  @default(false)
+  concentrationNote String?
+  spellSlots        String?  // JSON: { "1": { "max": 4, "used": 2 }, ... }
+  turnNumber        Int      @default(1)
+  sortOrder         Int      @default(0)     // For ordering within same initiative
+
+  // Source tracking (where did this creature come from?)
+  sourceType    String  // "creature" | "custom" | "pc"
+  sourceId      String? // Reference to original template
+  statsSnapshot String  // Full stat block JSON (frozen at time of adding)
+
+  // Relation to Combat
+  combatId String
+  combat   Combat @relation(fields: [combatId], references: [id], onDelete: Cascade)
+
+  @@index([combatId])
+}
+
+// ============================================
+// CREATURE TEMPLATES (Seeded SRD Data)
+// ============================================
+
+model Creature {
+  id              String  @id @default(cuid())
+  index           String  @unique // "aboleth", "goblin" - matches JSON
+  name            String
+  gameSystem      String  // "DND5E" | "DAGGERHEART"
+  size            String? // "Medium", "Large", etc.
+  creatureType    String? // "aberration", "beast", "humanoid"
+  challengeRating Float?
+  stats           String  // Full JSON stat block
+
+  @@index([gameSystem])
+  @@index([name])
+}
+
+// ============================================
+// GM-CREATED CONTENT
+// ============================================
+
+model CustomCreature {
+  id         String   @id @default(cuid())
+  name       String
+  gameSystem String
+  stats      String   // Full JSON stat block
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relation to User (belongs to one GM)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, gameSystem])
+  @@index([name])
+}
+
+model PlayerCharacter {
+  id         String   @id @default(cuid())
+  name       String
+  gameSystem String
+  stats      String   // JSON: class, race, level, ac, hp, attributes, passives
+  imageUrl   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relation to User (belongs to one GM)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relation to Campaign (optional - tracks which campaign PC was created from)
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@index([userId, gameSystem])
+  @@index([campaignId])
+  @@index([name])
+}
+
+// ============================================
+// SPELL REFERENCE (Seeded SRD Data)
+// ============================================
+
+model Spell {
+  id         String @id @default(cuid())
+  index      String @unique // "fireball", "cure-wounds"
+  name       String
+  level      Int    // 0 = cantrip
+  school     String // "evocation", "abjuration", etc.
+  gameSystem String
+  stats      String // Full JSON spell data
+
+  @@index([gameSystem, level])
+  @@index([name])
+}
