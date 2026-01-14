@@ -588,8 +588,7 @@ export default function CampaignDetailPage() {
       sidebarSubtitle={
         gameSystemLabels[campaign.gameSystem] || campaign.gameSystem
       }
-      navItems={navItems}
-      headerCenter={<Button onClick={openCreateModal}>+ New Encounter</Button>}>
+      navItems={navItems}>
       <Container size='lg' py='xl'>
         {/* Breadcrumbs */}
         <Breadcrumbs mb='md'>
@@ -609,6 +608,7 @@ export default function CampaignDetailPage() {
               </Badge>
             </Group>
           </div>
+          <Button onClick={openCreateModal}>+ New Encounter</Button>
         </Group>
 
         {/* Player Characters & Custom NPCs Section */}

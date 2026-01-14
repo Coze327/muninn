@@ -81,9 +81,6 @@ export default function CampaignsPage() {
     <AppShellLayout
       sidebarTitle="Campaigns"
       sidebarSubtitle="Manage your TTRPG campaigns"
-      headerCenter={
-        <Button onClick={openModal}>+ New Campaign</Button>
-      }
     >
       <Container size="lg" py="xl">
         <Group justify="space-between" mb="xl">
@@ -93,6 +90,7 @@ export default function CampaignsPage() {
               Manage your TTRPG campaigns
             </Text>
           </div>
+          <Button onClick={openModal}>+ New Campaign</Button>
         </Group>
 
         {error && (
