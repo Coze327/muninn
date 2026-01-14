@@ -68,6 +68,7 @@ export function InitiativeTracker({
     string | null
   >(null);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [hoveredCreatureId, setHoveredCreatureId] = useState<string | null>(null);
 
   const handleImageError = (creatureId: string) => {
     setImageErrors((prev) => new Set(prev).add(creatureId));
@@ -182,11 +183,16 @@ export function InitiativeTracker({
             const tokenColor =
               creature.tokenColor || (isPC ? '#3b82f6' : '#4a5568');
 
+            const isHovered = hoveredCreatureId === creature.id;
+            const showAC = isCurrentTurn || isSelected || isHovered;
+
             return (
               <Box
                 key={creature.id}
                 className='initiative-card'
                 onClick={() => onSelectCreature(creature.id)}
+                onMouseEnter={() => setHoveredCreatureId(creature.id)}
+                onMouseLeave={() => setHoveredCreatureId(null)}
                 style={{
                   cursor: 'pointer',
                   width: 120,
@@ -413,43 +419,45 @@ export function InitiativeTracker({
                   }}>
                   {/* Top section */}
                   <Stack gap={6} align='center'>
-                    {/* AC pill */}
-                    <Box
-                      style={{
-                        background: 'rgba(0, 0, 0, 0.5)',
-                        backdropFilter: 'blur(10px)',
-                        borderRadius: RADIUS.MD,
-                        padding: '5px 14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                      }}>
-                      <Text
-                        size='xs'
-                        c='dimmed'
-                        fw={600}
+                    {/* AC pill - only show on current turn, selected, or hover */}
+                    {showAC && (
+                      <Box
                         style={{
-                          color: 'rgba(255,255,255,0.7)',
-                          letterSpacing: '0.5px',
+                          background: 'rgba(0, 0, 0, 0.5)',
+                          backdropFilter: 'blur(10px)',
+                          borderRadius: RADIUS.MD,
+                          padding: '5px 14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
                         }}>
-                        AC
-                      </Text>
-                      <Text size='sm' fw={700} style={{ color: 'white' }}>
-                        {creature.armorClass}
-                      </Text>
-                      {creature.isConcentrating && (
-                        <Box
+                        <Text
+                          size='xs'
+                          c='dimmed'
+                          fw={600}
                           style={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: '50%',
-                            background: '#a855f7',
-                            boxShadow: '0 0 8px #a855f7',
-                          }}
-                        />
-                      )}
-                    </Box>
+                            color: 'rgba(255,255,255,0.7)',
+                            letterSpacing: '0.5px',
+                          }}>
+                          AC
+                        </Text>
+                        <Text size='sm' fw={700} style={{ color: 'white' }}>
+                          {creature.armorClass}
+                        </Text>
+                        {creature.isConcentrating && (
+                          <Box
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              background: '#a855f7',
+                              boxShadow: '0 0 8px #a855f7',
+                            }}
+                          />
+                        )}
+                      </Box>
+                    )}
 
                     {/* Status effects */}
                     {statusEffects.length > 0 && (
