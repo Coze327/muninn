@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
+import { Providers } from "@/components/providers/Providers";
 
 // Styles
 import "@mantine/core/styles.css";
@@ -23,19 +24,21 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body>
-        <MantineProvider>
-          <Notifications
-            position="top-center"
-            limit={10}
-            zIndex={1000}
-            styles={{
-              notification: {
-                backgroundColor: 'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6))',
-              },
-            }}
-          />
-          {children}
-        </MantineProvider>
+        <Providers>
+          <MantineProvider>
+            <Notifications
+              position="top-center"
+              limit={10}
+              zIndex={1000}
+              styles={{
+                notification: {
+                  backgroundColor: 'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6))',
+                },
+              }}
+            />
+            {children}
+          </MantineProvider>
+        </Providers>
       </body>
     </html>
   );

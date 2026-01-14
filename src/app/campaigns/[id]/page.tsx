@@ -14,12 +14,11 @@ import {
   Loader,
   Center,
   Alert,
-  Breadcrumbs,
-  Anchor,
   Box,
-  Grid,
   Table,
   Accordion,
+  Breadcrumbs,
+  Anchor,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { CreateCombatModal } from '@/components/combat/CreateCombatModal';
@@ -31,8 +30,13 @@ import { PCCard } from '@/components/player-characters/PCCard';
 import { CreateNPCModal } from '@/components/custom-npcs/CreateNPCModal';
 import { EditNPCModal } from '@/components/custom-npcs/EditNPCModal';
 import { NPCCard } from '@/components/custom-npcs/NPCCard';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import type { DnD5eCreature } from '@/types/dnd5e';
-import { formatChallengeRating, getArmorClass, parseHitPoints } from '@/types/dnd5e';
+import {
+  formatChallengeRating,
+  getArmorClass,
+  parseHitPoints,
+} from '@/types/dnd5e';
 
 type Combat = {
   id: string;
@@ -94,7 +98,9 @@ export default function CampaignDetailPage() {
   const campaignId = params.id as string;
 
   const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>([]);
+  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
+    []
+  );
   const [customNPCs, setCustomNPCs] = useState<CustomCreature[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -336,9 +342,7 @@ export default function CampaignDetailPage() {
 
   const handlePCUpdated = (updatedPC: PlayerCharacter) => {
     setPlayerCharacters(
-      playerCharacters.map((pc) =>
-        pc.id === updatedPC.id ? updatedPC : pc
-      )
+      playerCharacters.map((pc) => (pc.id === updatedPC.id ? updatedPC : pc))
     );
   };
 
@@ -397,19 +401,45 @@ export default function CampaignDetailPage() {
     }
   };
 
+  // Navigation items for this campaign
+  const navItems = [
+    {
+      label: 'All Campaigns',
+      icon: '📋',
+      href: '/campaigns',
+    },
+    {
+      label: 'Profile',
+      icon: '👤',
+      href: '/profile',
+    },
+    {
+      label: 'Settings',
+      icon: '⚙️',
+    },
+    {
+      label: 'Help',
+      icon: '❓',
+    },
+  ];
+
   if (loading) {
     return (
-      <Center h='50vh'>
-        <Loader size='lg' />
-      </Center>
+      <AppShellLayout sidebarTitle="Loading..." navItems={navItems}>
+        <Center h='calc(100vh - 60px)'>
+          <Loader size='lg' />
+        </Center>
+      </AppShellLayout>
     );
   }
 
   if (error || !campaign) {
     return (
-      <Container size='lg' py='xl'>
-        <Alert color='red'>{error || 'Campaign not found'}</Alert>
-      </Container>
+      <AppShellLayout sidebarTitle="Error" navItems={navItems}>
+        <Container size='lg' py='xl'>
+          <Alert color='red'>{error || 'Campaign not found'}</Alert>
+        </Container>
+      </AppShellLayout>
     );
   }
 
@@ -500,32 +530,40 @@ export default function CampaignDetailPage() {
   };
 
   return (
-    <Container size='lg' py='xl'>
-      {/* Breadcrumbs */}
-      <Breadcrumbs mb='md'>
-        <Anchor href='/campaigns' size='sm'>
-          Campaigns
-        </Anchor>
-        <Text size='sm'>{campaign.name}</Text>
-      </Breadcrumbs>
+    <AppShellLayout
+      sidebarTitle={campaign.name}
+      sidebarSubtitle={gameSystemLabels[campaign.gameSystem] || campaign.gameSystem}
+      navItems={navItems}
+      headerCenter={
+        <Button onClick={openCreateModal}>+ New Encounter</Button>
+      }
+    >
+      <Container size='lg' py='xl'>
+        {/* Breadcrumbs */}
+        <Breadcrumbs mb='md'>
+          <Anchor href='/campaigns' size='sm'>
+            Campaigns
+          </Anchor>
+          <Text size='sm'>{campaign.name}</Text>
+        </Breadcrumbs>
 
-      {/* Header */}
-      <Group justify='space-between' mb='xl'>
-        <div>
-          <Group gap='sm' align='center'>
-            <Title order={1}>{campaign.name}</Title>
-            <Badge color={campaign.gameSystem === 'DND5E' ? 'red' : 'violet'}>
-              {gameSystemLabels[campaign.gameSystem] || campaign.gameSystem}
-            </Badge>
-          </Group>
-        </div>
-      </Group>
+        {/* Header */}
+        <Group justify='space-between' mb='xl'>
+          <div>
+            <Group gap='sm' align='center'>
+              <Title order={1}>{campaign.name}</Title>
+              <Badge color={campaign.gameSystem === 'DND5E' ? 'red' : 'violet'}>
+                {gameSystemLabels[campaign.gameSystem] || campaign.gameSystem}
+              </Badge>
+            </Group>
+          </div>
+        </Group>
 
       {/* Player Characters Section */}
       <Box mb='xl'>
         <Group justify='space-between' mb='md'>
           <Title order={2} size='h3'>
-            Player Characters
+            Player Characters*
           </Title>
           <Button onClick={openCreatePCModal} size='sm'>
             + Add PC
@@ -608,7 +646,8 @@ export default function CampaignDetailPage() {
             <Accordion.Control>
               <Group justify='space-between' pr='md'>
                 <Title order={2} size='h3'>
-                  Custom NPCs {customNPCs.length > 0 && `(${customNPCs.length})`}
+                  Custom NPCs{' '}
+                  {customNPCs.length > 0 && `(${customNPCs.length})`}
                 </Title>
               </Group>
             </Accordion.Control>
@@ -626,7 +665,10 @@ export default function CampaignDetailPage() {
                       <Text c='dimmed' size='sm'>
                         No custom NPCs yet
                       </Text>
-                      <Button onClick={openCreateNPCModal} size='sm' variant='light'>
+                      <Button
+                        onClick={openCreateNPCModal}
+                        size='sm'
+                        variant='light'>
                         + Create NPC
                       </Button>
                     </Stack>
@@ -657,14 +699,22 @@ export default function CampaignDetailPage() {
                         }
                         const size = stats.size || 'Medium';
                         const type = stats.type || 'Unknown';
-                        const cr = stats.challenge_rating !== undefined ? formatChallengeRating(stats.challenge_rating) : '0';
-                        const ac = stats.armor_class ? getArmorClass(stats.armor_class) : 10;
-                        const hp = stats.hit_points_roll ? parseHitPoints(stats.hit_points_roll).average : 0;
+                        const cr =
+                          stats.challenge_rating !== undefined
+                            ? formatChallengeRating(stats.challenge_rating)
+                            : '0';
+                        const ac = stats.armor_class
+                          ? getArmorClass(stats.armor_class)
+                          : 10;
+                        const hp = stats.hit_points_roll
+                          ? parseHitPoints(stats.hit_points_roll).average
+                          : 0;
                         const speed = stats.speed?.walk || '30 ft.';
                         const str = stats.abilities?.STR || 10;
                         const dex = stats.abilities?.DEX || 10;
                         const con = stats.abilities?.CON || 10;
-                        const passivePerception = stats.senses?.passive_perception || 10;
+                        const passivePerception =
+                          stats.senses?.passive_perception || 10;
 
                         return (
                           <Table.Tr
@@ -672,7 +722,9 @@ export default function CampaignDetailPage() {
                             style={{ cursor: 'pointer' }}
                             onClick={() => handleNPCClick(npc)}>
                             <Table.Td fw={500}>{npc.name}</Table.Td>
-                            <Table.Td>{size} {type}</Table.Td>
+                            <Table.Td>
+                              {size} {type}
+                            </Table.Td>
                             <Table.Td>
                               <Badge variant='light' size='sm' color='red'>
                                 {cr}
@@ -702,9 +754,6 @@ export default function CampaignDetailPage() {
         <Title order={2} size='h3'>
           Encounters
         </Title>
-        <Button onClick={openCreateModal} size='sm'>
-          + New Encounter
-        </Button>
       </Group>
 
       {/* Combat List */}
@@ -790,6 +839,7 @@ export default function CampaignDetailPage() {
         }}
         customNPC={selectedNPC}
       />
-    </Container>
+      </Container>
+    </AppShellLayout>
   );
 }

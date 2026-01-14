@@ -9,7 +9,6 @@ import {
   Group,
   SimpleGrid,
   Card,
-  Badge,
   Stack,
   Loader,
   Center,
@@ -18,6 +17,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { CreateCampaignModal } from "@/components/campaigns/CreateCampaignModal";
 import { CampaignCard } from "@/components/campaigns/CampaignCard";
+import { AppShellLayout } from "@/components/layout/AppShellLayout";
 
 type Campaign = {
   id: string;
@@ -69,59 +69,68 @@ export default function CampaignsPage() {
 
   if (loading) {
     return (
-      <Center h="50vh">
-        <Loader size="lg" />
-      </Center>
+      <AppShellLayout sidebarTitle="Campaigns" sidebarSubtitle="Manage your TTRPG campaigns">
+        <Center h="calc(100vh - 60px)">
+          <Loader size="lg" />
+        </Center>
+      </AppShellLayout>
     );
   }
 
   return (
-    <Container size="lg" py="xl">
-      <Group justify="space-between" mb="xl">
-        <div>
-          <Title order={1}>Campaigns</Title>
-          <Text c="dimmed" size="sm">
-            Manage your TTRPG campaigns
-          </Text>
-        </div>
-        <Button onClick={openModal}>New Campaign</Button>
-      </Group>
-
-      {error && (
-        <Alert color="red" mb="lg">
-          {error}
-        </Alert>
-      )}
-
-      {campaigns.length === 0 ? (
-        <Card withBorder p="xl" ta="center">
-          <Stack align="center" gap="md">
-            <Text size="lg" fw={500}>
-              No campaigns yet
-            </Text>
+    <AppShellLayout
+      sidebarTitle="Campaigns"
+      sidebarSubtitle="Manage your TTRPG campaigns"
+      headerCenter={
+        <Button onClick={openModal}>+ New Campaign</Button>
+      }
+    >
+      <Container size="lg" py="xl">
+        <Group justify="space-between" mb="xl">
+          <div>
+            <Title order={1}>Campaigns</Title>
             <Text c="dimmed" size="sm">
-              Create your first campaign to start tracking combat encounters
+              Manage your TTRPG campaigns
             </Text>
-            <Button onClick={openModal}>Create Campaign</Button>
-          </Stack>
-        </Card>
-      ) : (
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
-          {campaigns.map((campaign) => (
-            <CampaignCard
-              key={campaign.id}
-              campaign={campaign}
-              onDeleted={handleCampaignDeleted}
-            />
-          ))}
-        </SimpleGrid>
-      )}
+          </div>
+        </Group>
 
-      <CreateCampaignModal
-        opened={modalOpened}
-        onClose={closeModal}
-        onCreated={handleCampaignCreated}
-      />
-    </Container>
+        {error && (
+          <Alert color="red" mb="lg">
+            {error}
+          </Alert>
+        )}
+
+        {campaigns.length === 0 ? (
+          <Card withBorder p="xl" ta="center">
+            <Stack align="center" gap="md">
+              <Text size="lg" fw={500}>
+                No campaigns yet
+              </Text>
+              <Text c="dimmed" size="sm">
+                Create your first campaign to start tracking combat encounters
+              </Text>
+              <Button onClick={openModal}>Create Campaign</Button>
+            </Stack>
+          </Card>
+        ) : (
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+            {campaigns.map((campaign) => (
+              <CampaignCard
+                key={campaign.id}
+                campaign={campaign}
+                onDeleted={handleCampaignDeleted}
+              />
+            ))}
+          </SimpleGrid>
+        )}
+
+        <CreateCampaignModal
+          opened={modalOpened}
+          onClose={closeModal}
+          onCreated={handleCampaignCreated}
+        />
+      </Container>
+    </AppShellLayout>
   );
 }
