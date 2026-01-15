@@ -25,6 +25,7 @@ import {
   BsShieldShaded, //Resistance icon
   BsShieldSlashFill, //Vulnerability icon
   BsShieldFillExclamation, //Condition Immunity icon
+  BsShieldFillPlus, //Temp HP icon
 } from 'react-icons/bs';
 import { useDiceRoller } from '@/hooks/useDiceRoller';
 
@@ -44,6 +45,7 @@ type CombatCreature = {
   initiative: number;
   currentHp: number;
   maxHp: number;
+  tempHp: number;
   armorClass: number;
   tokenColor: string | null;
   statusEffects: string;
@@ -86,6 +88,7 @@ export function EditableFieldsPanel({
   const [armorClass, setArmorClass] = useState<number | string>(10);
   const [maxHp, setMaxHp] = useState<number | string>(1);
   const [currentHp, setCurrentHp] = useState<number | string>(1);
+  const [tempHp, setTempHp] = useState<number | string>(0);
   const [tokenColor, setTokenColor] = useState('');
   const [statusEffects, setStatusEffects] = useState<string[]>([]);
   const [isConcentrating, setIsConcentrating] = useState(false);
@@ -103,6 +106,7 @@ export function EditableFieldsPanel({
       setArmorClass(creature.armorClass);
       setMaxHp(creature.maxHp);
       setCurrentHp(creature.currentHp);
+      setTempHp(creature.tempHp);
       setTokenColor(creature.tokenColor || '#4a5568');
       setIsConcentrating(creature.isConcentrating);
       setConcentrationNote(creature.concentrationNote || '');
@@ -136,6 +140,7 @@ export function EditableFieldsPanel({
       armorClass: Number(armorClass),
       maxHp: Number(maxHp),
       currentHp: Number(currentHp),
+      tempHp: Number(tempHp),
       tokenColor: tokenColor || null,
       statusEffects: JSON.stringify(statusEffects),
       isConcentrating,
@@ -190,24 +195,38 @@ export function EditableFieldsPanel({
 
   const attributes = getCreatureAttributes();
 
-  // Apply damage
+  // Apply damage (temp HP absorbs first, then current HP)
   const applyDamage = () => {
     const amount = Number(hpAdjustValue);
     if (isNaN(amount) || amount <= 0) return;
 
-    const newHp = Math.max(0, Number(currentHp) - amount);
-    setCurrentHp(newHp);
+    let remaining = amount;
+    let newTempHp = Number(tempHp);
+    let newCurrentHp = Number(currentHp);
+
+    // Temp HP absorbs damage first
+    if (newTempHp > 0) {
+      const absorbed = Math.min(newTempHp, remaining);
+      newTempHp -= absorbed;
+      remaining -= absorbed;
+    }
+
+    // Remaining damage goes to current HP
+    newCurrentHp = Math.max(0, newCurrentHp - remaining);
+
+    setTempHp(newTempHp);
+    setCurrentHp(newCurrentHp);
     setHpAdjustValue('');
 
     // Auto-save HP changes
-    onUpdate({ id: creature.id, currentHp: newHp });
+    onUpdate({ id: creature.id, currentHp: newCurrentHp, tempHp: newTempHp });
     fetch(`/api/combat-creatures/${creature.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentHp: newHp }),
+      body: JSON.stringify({ currentHp: newCurrentHp, tempHp: newTempHp }),
     }).catch(console.error);
 
-    // Concentration check if creature is concentrating
+    // Concentration check if creature is concentrating (based on total damage taken)
     if (isConcentrating) {
       try {
         const stats = JSON.parse(creature.statsSnapshot);
@@ -228,6 +247,28 @@ export function EditableFieldsPanel({
         console.error('Failed to roll concentration check:', error);
       }
     }
+
+    // Refocus input
+    setTimeout(() => hpInputRef.current?.focus(), 50);
+  };
+
+  // Grant temporary HP (replaces current temp HP if higher)
+  const grantTempHp = () => {
+    const amount = Number(hpAdjustValue);
+    if (isNaN(amount) || amount <= 0) return;
+
+    // Temp HP doesn't stack - take the higher value
+    const newTempHp = Math.max(Number(tempHp), amount);
+    setTempHp(newTempHp);
+    setHpAdjustValue('');
+
+    // Auto-save temp HP change
+    onUpdate({ id: creature.id, tempHp: newTempHp });
+    fetch(`/api/combat-creatures/${creature.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tempHp: newTempHp }),
+    }).catch(console.error);
 
     // Refocus input
     setTimeout(() => hpInputRef.current?.focus(), 50);
@@ -255,10 +296,13 @@ export function EditableFieldsPanel({
   };
 
   // Handle keyboard shortcuts for HP adjustment
+  // Enter = Damage, Shift+Enter = Heal, Ctrl+Enter = Grant Temp HP
   const handleHpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (e.shiftKey) {
+      if (e.ctrlKey) {
+        grantTempHp();
+      } else if (e.shiftKey) {
         applyHealing();
       } else {
         applyDamage();
@@ -449,9 +493,13 @@ export function EditableFieldsPanel({
           width: '240px',
           borderLeft: '1px solid var(--mantine-color-default-border)',
         }}>
-        <Stack gap='sm'>
+        <Stack gap='md'>
           {/* Status Indicators */}
-          <Group gap={10} justify='center' wrap='nowrap'>
+          <Group
+            gap='xs'
+            justify='center'
+            wrap='nowrap'
+            style={{ lineHeight: 0 }}>
             <Tooltip label='Concentration' withArrow>
               <Box
                 style={{
@@ -461,7 +509,10 @@ export function EditableFieldsPanel({
                     : 'none',
                   transform: isConcentrating ? 'scale(1.1)' : 'scale(1)',
                 }}>
-                <BsCCircleFill size={20} color={isConcentrating ? '#a855f7' : '#888'} />
+                <BsCCircleFill
+                  size={20}
+                  color={isConcentrating ? '#a855f7' : '#888'}
+                />
               </Box>
             </Tooltip>
             <Tooltip label='Damage Immunities' withArrow>
@@ -475,7 +526,10 @@ export function EditableFieldsPanel({
                     ? 'scale(1.1)'
                     : 'scale(1)',
                 }}>
-                <BsShieldFill size={20} color={attributes.hasImmunities ? '#3b82f6' : '#888'} />
+                <BsShieldFill
+                  size={20}
+                  color={attributes.hasImmunities ? '#3b82f6' : '#888'}
+                />
               </Box>
             </Tooltip>
             <Tooltip label='Damage Resistances' withArrow>
@@ -489,7 +543,10 @@ export function EditableFieldsPanel({
                     ? 'scale(1.1)'
                     : 'scale(1)',
                 }}>
-                <BsShieldShaded size={20} color={attributes.hasResistances ? '#10b981' : '#888'} />
+                <BsShieldShaded
+                  size={20}
+                  color={attributes.hasResistances ? '#10b981' : '#888'}
+                />
               </Box>
             </Tooltip>
             <Tooltip label='Damage Vulnerabilities' withArrow>
@@ -503,7 +560,10 @@ export function EditableFieldsPanel({
                     ? 'scale(1.1)'
                     : 'scale(1)',
                 }}>
-                <BsShieldSlashFill size={20} color={attributes.hasVulnerabilities ? '#ef4444' : '#888'} />
+                <BsShieldSlashFill
+                  size={20}
+                  color={attributes.hasVulnerabilities ? '#ef4444' : '#888'}
+                />
               </Box>
             </Tooltip>
             <Tooltip label='Condition Immunities' withArrow>
@@ -517,64 +577,89 @@ export function EditableFieldsPanel({
                     ? 'scale(1.1)'
                     : 'scale(1)',
                 }}>
-                <BsShieldFillExclamation size={20} color={attributes.hasConditionalImmunities ? '#f59e0b' : '#888'} />
+                <BsShieldFillExclamation
+                  size={20}
+                  color={
+                    attributes.hasConditionalImmunities ? '#f59e0b' : '#888'
+                  }
+                />
+              </Box>
+            </Tooltip>
+            <Tooltip
+              label={
+                Number(tempHp) > 0
+                  ? `Temp HP: ${tempHp} (Ctrl+Enter to grant)`
+                  : 'Temp HP (Ctrl+Enter to grant)'
+              }
+              withArrow>
+              <Box
+                style={{
+                  transition: 'all 0.2s ease',
+                  filter:
+                    Number(tempHp) > 0
+                      ? 'drop-shadow(0 0 6px rgba(6, 182, 212, 0.6))'
+                      : 'none',
+                  transform: Number(tempHp) > 0 ? 'scale(1.1)' : 'scale(1)',
+                }}>
+                <BsShieldFillPlus
+                  size={20}
+                  color={Number(tempHp) > 0 ? '#06b6d4' : '#888'}
+                />
               </Box>
             </Tooltip>
           </Group>
 
           {/* HP Adjustment Input */}
-          <Stack gap='sm'>
-            <TextInput
-              ref={hpInputRef}
-              type='number'
-              placeholder='Amount'
-              value={hpAdjustValue}
-              onChange={(e) => setHpAdjustValue(e.target.value)}
-              onKeyDown={handleHpKeyDown}
+          <TextInput
+            ref={hpInputRef}
+            type='number'
+            placeholder='Amount'
+            value={hpAdjustValue}
+            onChange={(e) => setHpAdjustValue(e.target.value)}
+            onKeyDown={handleHpKeyDown}
+            size='sm'
+            styles={{
+              input: {
+                borderRadius: RADIUS.MD,
+                textAlign: 'center',
+                fontSize: '16px',
+                fontWeight: 600,
+                height: '36px',
+              },
+            }}
+          />
+          <Group gap='xs' grow>
+            <Button
+              variant='light'
+              color='red'
               size='sm'
+              onClick={applyDamage}
+              disabled={!hpAdjustValue || Number(hpAdjustValue) <= 0}
               styles={{
-                input: {
+                root: {
                   borderRadius: RADIUS.MD,
-                  textAlign: 'center',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  height: '36px',
+                  height: '32px',
+                  fontSize: '13px',
                 },
-              }}
-            />
-            <Group gap={6} grow>
-              <Button
-                variant='light'
-                color='red'
-                size='sm'
-                onClick={applyDamage}
-                disabled={!hpAdjustValue || Number(hpAdjustValue) <= 0}
-                styles={{
-                  root: {
-                    borderRadius: RADIUS.MD,
-                    height: '32px',
-                    fontSize: '13px',
-                  },
-                }}>
-                Damage
-              </Button>
-              <Button
-                variant='light'
-                color='green'
-                size='sm'
-                onClick={applyHealing}
-                disabled={!hpAdjustValue || Number(hpAdjustValue) <= 0}
-                styles={{
-                  root: {
-                    borderRadius: RADIUS.MD,
-                    height: '32px',
-                    fontSize: '13px',
-                  },
-                }}>
-                Heal
-              </Button>
-            </Group>
-          </Stack>
+              }}>
+              Damage
+            </Button>
+            <Button
+              variant='light'
+              color='green'
+              size='sm'
+              onClick={applyHealing}
+              disabled={!hpAdjustValue || Number(hpAdjustValue) <= 0}
+              styles={{
+                root: {
+                  borderRadius: RADIUS.MD,
+                  height: '32px',
+                  fontSize: '13px',
+                },
+              }}>
+              Heal
+            </Button>
+          </Group>
         </Stack>
       </Box>
     </Box>

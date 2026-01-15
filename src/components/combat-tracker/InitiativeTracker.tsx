@@ -30,6 +30,7 @@ type CombatCreature = {
   initiative: number;
   currentHp: number;
   maxHp: number;
+  tempHp: number;
   armorClass: number;
   tokenColor: string | null;
   statusEffects: string;
@@ -550,6 +551,11 @@ export function InitiativeTracker({
                               textShadow: '0 1px 3px rgba(0,0,0,0.7)',
                             }}>
                             {creature.currentHp} / {creature.maxHp}
+                            {creature.tempHp > 0 && (
+                              <Text component='span' c='cyan' inherit>
+                                {' '}+{creature.tempHp}
+                              </Text>
+                            )}
                             {dead && ' 💀'}
                           </Text>
                         </Box>

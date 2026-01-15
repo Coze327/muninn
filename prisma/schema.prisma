@@ -77,6 +77,7 @@ model CombatCreature {
   initiative        Int
   currentHp         Int
   maxHp             Int
+  tempHp            Int      @default(0)  // Temporary HP (absorbs damage first)
   armorClass        Int
   tokenColor        String?
   statusEffects     String   @default("[]")  // JSON array of strings

@@ -10,6 +10,7 @@ const updateCombatCreatureSchema = z.object({
   initiative: z.number().int().optional(),
   currentHp: z.number().int().min(0).optional(),
   maxHp: z.number().int().min(1).optional(),
+  tempHp: z.number().int().min(0).optional(),
   armorClass: z.number().int().min(0).optional(),
   tokenColor: z.string().max(20).nullable().optional(),
   statusEffects: z.string().optional(), // JSON array string

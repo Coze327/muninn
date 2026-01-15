@@ -39,6 +39,7 @@ type CombatCreature = {
   initiative: number;
   currentHp: number;
   maxHp: number;
+  tempHp: number;
   armorClass: number;
   tokenColor: string | null;
   statusEffects: string;
