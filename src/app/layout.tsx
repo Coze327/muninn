@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
-import { ColorSchemeScript, MantineProvider } from "@mantine/core";
-import { Notifications } from "@mantine/notifications";
-import { Providers } from "@/components/providers/Providers";
+import type { Metadata } from 'next';
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+import { Providers } from '@/components/providers/Providers';
 
 // Styles
-import "@mantine/core/styles.css";
-import "@mantine/notifications/styles.css";
-import "./globals.css";
+import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Muninn",
-  description: "TTRPG Combat Manager",
+  title: 'Goblins Included',
+  description: 'TTRPG Combat Manager',
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang='en' suppressHydrationWarning>
       <head>
         <ColorSchemeScript />
       </head>
@@ -27,12 +27,13 @@ export default function RootLayout({
         <Providers>
           <MantineProvider>
             <Notifications
-              position="top-center"
+              position='top-center'
               limit={10}
               zIndex={1000}
               styles={{
                 notification: {
-                  backgroundColor: 'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6))',
+                  backgroundColor:
+                    'light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6))',
                 },
               }}
             />

@@ -13,10 +13,18 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import {
+  BsSunFill,
+  BsMoonFill,
+  BsPersonFill,
+  BsFolderFill,
+  BsGearFill,
+  BsQuestionCircleFill,
+} from 'react-icons/bs';
 
 type NavItem = {
   label: string;
-  icon: string;
+  icon: ReactNode;
   href?: string;
   onClick?: () => void;
 };
@@ -45,7 +53,8 @@ export function AppShellLayout({
 }: AppShellLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [navOpened, { toggle: toggleNav, close: closeNav }] = useDisclosure(false);
+  const [navOpened, { toggle: toggleNav, close: closeNav }] =
+    useDisclosure(false);
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const [mounted, setMounted] = useState(false);
 
@@ -58,22 +67,22 @@ export function AppShellLayout({
   const defaultNavItems: NavItem[] = [
     {
       label: 'All Campaigns',
-      icon: '📋',
+      icon: <BsFolderFill size={16} />,
       href: '/campaigns',
     },
     {
       label: 'Profile',
-      icon: '👤',
+      icon: <BsPersonFill size={16} />,
       href: '/profile',
     },
     {
       label: 'Settings',
-      icon: '⚙️',
+      icon: <BsGearFill size={16} />,
       onClick: () => closeNav(),
     },
     {
       label: 'Help',
-      icon: '❓',
+      icon: <BsQuestionCircleFill size={16} />,
       onClick: () => closeNav(),
     },
   ];
@@ -97,62 +106,58 @@ export function AppShellLayout({
         breakpoint: 'sm',
         collapsed: { desktop: !navOpened, mobile: !navOpened },
       }}
-      padding={0}
-    >
+      padding={0}>
       {/* Header */}
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
+        <Group h='100%' px='md' justify='space-between'>
           <Group>
-            <Burger opened={navOpened} onClick={toggleNav} size="sm" />
+            <Burger opened={navOpened} onClick={toggleNav} size='sm' />
             <Text
               fw={700}
-              size="lg"
+              size='lg'
               style={{ cursor: 'pointer' }}
-              onClick={() => router.push('/campaigns')}
-            >
-              Muninn
+              onClick={() => router.push('/campaigns')}>
+              Goblins Included
             </Text>
           </Group>
 
           {headerCenter && (
-            <Group style={{ flex: 1 }} justify="center">
+            <Group style={{ flex: 1 }} justify='center'>
               {headerCenter}
             </Group>
           )}
 
-          <Group gap="md">
+          <Group gap='md'>
             {headerRight}
             <ActionIcon
-              variant="subtle"
+              variant='subtle'
               onClick={() => toggleColorScheme()}
-              size="lg"
-              title="Toggle color scheme"
-            >
-              {mounted ? (colorScheme === 'dark' ? '☀️' : '🌙') : '🌙'}
+              size='lg'
+              title='Toggle color scheme'>
+              {mounted ? (colorScheme === 'dark' ? <BsSunFill size={18} /> : <BsMoonFill size={18} />) : <BsMoonFill size={18} />}
             </ActionIcon>
             <ActionIcon
-              variant="subtle"
+              variant='subtle'
               onClick={() => router.push('/profile')}
-              size="lg"
-              title="Profile"
-            >
-              👤
+              size='lg'
+              title='Profile'>
+              <BsPersonFill size={18} />
             </ActionIcon>
           </Group>
         </Group>
       </AppShell.Header>
 
       {/* Navigation Sidebar */}
-      <AppShell.Navbar p="md">
+      <AppShell.Navbar p='md'>
         {(sidebarTitle || sidebarSubtitle) && (
-          <Stack gap="xs" mb="xl">
+          <Stack gap='xs' mb='xl'>
             {sidebarTitle && (
-              <Text size="lg" fw={500}>
+              <Text size='lg' fw={500}>
                 {sidebarTitle}
               </Text>
             )}
             {sidebarSubtitle && (
-              <Text size="sm" c="dimmed">
+              <Text size='sm' c='dimmed'>
                 {sidebarSubtitle}
               </Text>
             )}
@@ -164,7 +169,7 @@ export function AppShellLayout({
             <NavLink
               key={index}
               label={item.label}
-              leftSection={<Text>{item.icon}</Text>}
+              leftSection={item.icon}
               active={item.href === pathname}
               onClick={() => handleNavClick(item)}
             />
@@ -173,9 +178,7 @@ export function AppShellLayout({
       </AppShell.Navbar>
 
       {/* Main Content */}
-      <AppShell.Main>
-        {children}
-      </AppShell.Main>
+      <AppShell.Main>{children}</AppShell.Main>
     </AppShell>
   );
 }
