@@ -31,6 +31,17 @@ import {
   AddCreatureModal,
 } from "@/components/combat-tracker";
 import { RollHistoryProvider, useRollHistory } from "@/lib/contexts/RollHistoryContext";
+import {
+  BsPlus,
+  BsSunFill,
+  BsMoonFill,
+  BsClockHistory,
+  BsPersonFill,
+  BsArrowLeft,
+  BsFolderFill,
+  BsGearFill,
+  BsQuestionCircleFill,
+} from "react-icons/bs";
 
 type CombatCreature = {
   id: string;
@@ -497,7 +508,7 @@ export default function CombatTrackerPage() {
           <Group style={{ flex: 1 }} justify="center">
             <Button
               variant="light"
-              leftSection={<Text size="sm">➕</Text>}
+              leftSection={<BsPlus size={18} />}
               onClick={openAddCreature}
             >
               Add Creatures
@@ -519,7 +530,7 @@ export default function CombatTrackerPage() {
               size="lg"
               title="Toggle color scheme"
             >
-              {colorScheme === "dark" ? "☀️" : "🌙"}
+              {colorScheme === "dark" ? <BsSunFill size={18} /> : <BsMoonFill size={18} />}
             </ActionIcon>
             <ActionIcon
               variant={historyOpened ? "filled" : "subtle"}
@@ -527,7 +538,7 @@ export default function CombatTrackerPage() {
               size="lg"
               title="Roll history"
             >
-              📜
+              <BsClockHistory size={18} />
             </ActionIcon>
             <ActionIcon
               variant="subtle"
@@ -535,7 +546,7 @@ export default function CombatTrackerPage() {
               size="lg"
               title="Profile"
             >
-              👤
+              <BsPersonFill size={18} />
             </ActionIcon>
           </Group>
         </Group>
@@ -558,7 +569,7 @@ export default function CombatTrackerPage() {
         <Stack gap={0} mt="xl">
           <NavLink
             label="Back to Campaign"
-            leftSection={<Text>←</Text>}
+            leftSection={<BsArrowLeft size={16} />}
             onClick={() => {
               closeNav();
               router.push(`/campaigns/${campaignId}`);
@@ -566,7 +577,7 @@ export default function CombatTrackerPage() {
           />
           <NavLink
             label="All Campaigns"
-            leftSection={<Text>📋</Text>}
+            leftSection={<BsFolderFill size={16} />}
             onClick={() => {
               closeNav();
               router.push("/campaigns");
@@ -574,7 +585,7 @@ export default function CombatTrackerPage() {
           />
           <NavLink
             label="Profile"
-            leftSection={<Text>👤</Text>}
+            leftSection={<BsPersonFill size={16} />}
             onClick={() => {
               closeNav();
               router.push("/profile");
@@ -582,12 +593,12 @@ export default function CombatTrackerPage() {
           />
           <NavLink
             label="Settings"
-            leftSection={<Text>⚙️</Text>}
+            leftSection={<BsGearFill size={16} />}
             onClick={() => closeNav()}
           />
           <NavLink
             label="Help"
-            leftSection={<Text>❓</Text>}
+            leftSection={<BsQuestionCircleFill size={16} />}
             onClick={() => closeNav()}
           />
         </Stack>
