@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 import {
   Container,
   Title,
@@ -13,11 +13,11 @@ import {
   Loader,
   Center,
   Alert,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { CreateCampaignModal } from "@/components/campaigns/CreateCampaignModal";
-import { CampaignCard } from "@/components/campaigns/CampaignCard";
-import { AppShellLayout } from "@/components/layout/AppShellLayout";
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { CreateCampaignModal } from '@/components/campaigns/CreateCampaignModal';
+import { CampaignCard } from '@/components/campaigns/CampaignCard';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 
 type Campaign = {
   id: string;
@@ -34,11 +34,12 @@ export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [modalOpened, { open: openModal, close: closeModal }] = useDisclosure(false);
+  const [modalOpened, { open: openModal, close: closeModal }] =
+    useDisclosure(false);
 
   const fetchCampaigns = async () => {
     try {
-      const response = await fetch("/api/campaigns");
+      const response = await fetch('/api/campaigns');
       const result = await response.json();
 
       if (result.error) {
@@ -48,7 +49,7 @@ export default function CampaignsPage() {
 
       setCampaigns(result.data);
     } catch {
-      setError("Failed to load campaigns");
+      setError('Failed to load campaigns');
     } finally {
       setLoading(false);
     }
@@ -69,9 +70,11 @@ export default function CampaignsPage() {
 
   if (loading) {
     return (
-      <AppShellLayout sidebarTitle="Campaigns" sidebarSubtitle="Manage your TTRPG campaigns">
-        <Center h="calc(100vh - 60px)">
-          <Loader size="lg" />
+      <AppShellLayout
+        sidebarTitle='Campaigns'
+        sidebarSubtitle='Manage your TTRPG campaigns'>
+        <Center h='calc(100vh - 60px)'>
+          <Loader size='lg' />
         </Center>
       </AppShellLayout>
     );
@@ -79,14 +82,13 @@ export default function CampaignsPage() {
 
   return (
     <AppShellLayout
-      sidebarTitle="Campaigns"
-      sidebarSubtitle="Manage your TTRPG campaigns"
-    >
-      <Container size="lg" py="xl">
-        <Group justify="space-between" mb="xl">
+      sidebarTitle='Campaigns'
+      sidebarSubtitle='Manage your TTRPG campaigns'>
+      <Container size='lg' py='xl'>
+        <Group justify='space-between' mb='xl'>
           <div>
             <Title order={1}>Campaigns</Title>
-            <Text c="dimmed" size="sm">
+            <Text c='dimmed' size='sm'>
               Manage your TTRPG campaigns
             </Text>
           </div>
@@ -94,25 +96,25 @@ export default function CampaignsPage() {
         </Group>
 
         {error && (
-          <Alert color="red" mb="lg">
+          <Alert color='red' mb='lg'>
             {error}
           </Alert>
         )}
 
         {campaigns.length === 0 ? (
-          <Card withBorder p="xl" ta="center">
-            <Stack align="center" gap="md">
-              <Text size="lg" fw={500}>
+          <Card withBorder p='xl' ta='center'>
+            <Stack align='center' gap='md'>
+              <Text size='lg' fw={500}>
                 No campaigns yet
               </Text>
-              <Text c="dimmed" size="sm">
-                Create your first campaign to start tracking combat encounters
+              <Text c='dimmed' size='sm'>
+                Create your first campaign
               </Text>
               <Button onClick={openModal}>Create Campaign</Button>
             </Stack>
           </Card>
         ) : (
-          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+          <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing='lg'>
             {campaigns.map((campaign) => (
               <CampaignCard
                 key={campaign.id}
