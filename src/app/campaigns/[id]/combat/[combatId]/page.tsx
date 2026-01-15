@@ -398,6 +398,35 @@ export default function CombatTrackerPage() {
   function RollHistoryContent() {
     const { rolls, clearHistory } = useRollHistory();
 
+    // Get color based on roll type
+    const getRollTypeColor = (rollType: string, rollName: string) => {
+      // Special case: differentiate damage vs healing
+      if (rollType === 'damage') {
+        return rollName === 'Healing' ? 'green' : 'red';
+      }
+      switch (rollType) {
+        case 'attack': return 'orange';
+        case 'save': return 'violet';
+        case 'ability': return 'blue';
+        case 'skill': return 'cyan';
+        default: return 'gray';
+      }
+    };
+
+    // Get label for roll type
+    const getRollTypeLabel = (rollType: string, rollName: string) => {
+      if (rollType === 'damage') {
+        return rollName === 'Healing' ? 'Heal' : 'Dmg';
+      }
+      switch (rollType) {
+        case 'attack': return 'Atk';
+        case 'save': return 'Save';
+        case 'ability': return 'Check';
+        case 'skill': return 'Skill';
+        default: return rollType;
+      }
+    };
+
     return (
       <>
         {rolls.length > 0 && (
@@ -411,25 +440,33 @@ export default function CombatTrackerPage() {
           </Text>
         ) : (
           <Stack gap="xs">
-            {rolls.map((roll) => (
-              <Paper key={roll.id} withBorder p="xs">
-                <Group justify="space-between" mb={4}>
-                  <Text size="sm" fw={600}>
-                    {roll.creatureName}
+            {rolls.map((roll) => {
+              const color = getRollTypeColor(roll.rollType, roll.rollName);
+              return (
+                <Paper key={roll.id} withBorder p="xs">
+                  <Group justify="space-between" mb={4}>
+                    <Group gap="xs">
+                      <Badge size="xs" color={color} variant="light">
+                        {getRollTypeLabel(roll.rollType, roll.rollName)}
+                      </Badge>
+                      <Text size="sm" fw={600}>
+                        {roll.creatureName}
+                      </Text>
+                    </Group>
+                    <Text size="xs" c="dimmed">
+                      {new Date(roll.timestamp).toLocaleTimeString()}
+                    </Text>
+                  </Group>
+                  <Text size="sm">{roll.rollName}</Text>
+                  <Text size="xl" fw={700} c={color}>
+                    {roll.result}
                   </Text>
                   <Text size="xs" c="dimmed">
-                    {new Date(roll.timestamp).toLocaleTimeString()}
+                    {roll.output}
                   </Text>
-                </Group>
-                <Text size="sm">{roll.rollName}</Text>
-                <Text size="xl" fw={700} c="blue">
-                  {roll.result}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  {roll.output}
-                </Text>
-              </Paper>
-            ))}
+                </Paper>
+              );
+            })}
           </Stack>
         )}
       </>

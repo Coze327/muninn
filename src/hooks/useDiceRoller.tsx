@@ -80,23 +80,43 @@ export function useDiceRoller() {
       // Check for critical hits/fails on d20 rolls (not damage rolls)
       const critResult = options.rollType !== 'damage' ? checkD20Critical(diceRoll) : null;
 
+      // Check pass/fail against DC if provided
+      const dc = options.dc;
+      const hasDC = dc !== undefined;
+      const passed = hasDC ? diceRoll.total >= dc : null;
+
       // Determine notification color
       let notificationColor = getRollColor(options.rollType);
-      let critText = '';
+      let statusText = '';
       if (critResult === 'nat20') {
         notificationColor = 'green';
-        critText = ' (Critical!)';
+        statusText = ' (Critical!)';
       } else if (critResult === 'nat1') {
         notificationColor = 'red';
-        critText = ' (Critical Fail!)';
+        statusText = ' (Critical Fail!)';
+      } else if (hasDC) {
+        // Show pass/fail for DC-based rolls
+        if (passed) {
+          notificationColor = 'green';
+          statusText = ' - Pass';
+        } else {
+          notificationColor = 'red';
+          statusText = ' - Fail';
+        }
+      }
+
+      // Build output string
+      let outputStr = diceRoll.output;
+      if (hasDC && passed !== null) {
+        outputStr += passed ? ' [PASS]' : ' [FAIL]';
       }
 
       // Show notification with standard Mantine format
       notifications.show({
-        title: `${options.creatureName}: ${diceRoll.total}${critText}`,
+        title: `${options.creatureName}: ${diceRoll.total}${statusText}`,
         message: `${options.rollName}\n→ ${diceRoll.output}`,
         color: notificationColor,
-        autoClose: critResult ? 8000 : 5000,
+        autoClose: critResult || hasDC ? 8000 : 5000,
         withCloseButton: true,
       });
 
@@ -107,7 +127,7 @@ export function useDiceRoller() {
         rollName: options.rollName,
         notation,
         result: diceRoll.total,
-        output: diceRoll.output,
+        output: outputStr,
       });
     } catch (error) {
       // Handle invalid notation gracefully

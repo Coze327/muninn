@@ -19,6 +19,7 @@ export type RollOptions = {
   creatureName: string;
   rollType: RollType;
   rollName: string;
+  dc?: number; // Optional DC for saves/checks - will show pass/fail
 };
 
 export type RollHistoryContextValue = {

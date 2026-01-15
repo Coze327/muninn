@@ -28,6 +28,7 @@ import {
   BsShieldFillPlus, //Temp HP icon
 } from 'react-icons/bs';
 import { useDiceRoller } from '@/hooks/useDiceRoller';
+import { useRollHistory } from '@/lib/contexts/RollHistoryContext';
 
 // Design system: Border radius constants
 const RADIUS = {
@@ -83,6 +84,7 @@ export function EditableFieldsPanel({
   onUpdate,
 }: EditableFieldsPanelProps) {
   const { roll } = useDiceRoller();
+  const { addRoll } = useRollHistory();
   const [identifier, setIdentifier] = useState('');
   const [initiative, setInitiative] = useState<number | string>(0);
   const [armorClass, setArmorClass] = useState<number | string>(10);
@@ -203,6 +205,7 @@ export function EditableFieldsPanel({
     let remaining = amount;
     let newTempHp = Number(tempHp);
     let newCurrentHp = Number(currentHp);
+    const oldTempHp = Number(tempHp);
 
     // Temp HP absorbs damage first
     if (newTempHp > 0) {
@@ -226,6 +229,28 @@ export function EditableFieldsPanel({
       body: JSON.stringify({ currentHp: newCurrentHp, tempHp: newTempHp }),
     }).catch(console.error);
 
+    // Log damage to roll history
+    const displayName = creature.identifier
+      ? `${creature.name} (${creature.identifier})`
+      : creature.name;
+    const tempAbsorbed = oldTempHp - newTempHp;
+    const hpDamage = Number(currentHp) - newCurrentHp;
+    let output = `${newCurrentHp}/${maxHp} HP`;
+    if (tempAbsorbed > 0) {
+      output = `${tempAbsorbed} absorbed by temp HP, ${hpDamage} to HP → ${output}`;
+    }
+    if (newTempHp > 0) {
+      output += ` (+${newTempHp} temp)`;
+    }
+    addRoll({
+      creatureName: displayName,
+      rollType: 'damage',
+      rollName: 'Damage Taken',
+      notation: `−${amount}`,
+      result: -amount,
+      output,
+    });
+
     // Concentration check if creature is concentrating (based on total damage taken)
     if (isConcentrating) {
       try {
@@ -234,14 +259,11 @@ export function EditableFieldsPanel({
         const conModifier = Math.floor((conScore - 10) / 2);
         const dc = Math.max(10, Math.floor(amount / 2));
 
-        const displayName = creature.identifier
-          ? `${creature.name} (${creature.identifier})`
-          : creature.name;
-
         roll(`1d20+${conModifier}`, {
           creatureName: displayName,
           rollType: 'save',
           rollName: `Concentration (DC ${dc})`,
+          dc,
         });
       } catch (error) {
         console.error('Failed to roll concentration check:', error);
@@ -279,7 +301,9 @@ export function EditableFieldsPanel({
     const amount = Number(hpAdjustValue);
     if (isNaN(amount) || amount <= 0) return;
 
-    const newHp = Math.min(Number(maxHp), Number(currentHp) + amount);
+    const oldHp = Number(currentHp);
+    const newHp = Math.min(Number(maxHp), oldHp + amount);
+    const actualHealing = newHp - oldHp;
     setCurrentHp(newHp);
     setHpAdjustValue('');
 
@@ -290,6 +314,26 @@ export function EditableFieldsPanel({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ currentHp: newHp }),
     }).catch(console.error);
+
+    // Log healing to roll history
+    const displayName = creature.identifier
+      ? `${creature.name} (${creature.identifier})`
+      : creature.name;
+    let output = `${newHp}/${maxHp} HP`;
+    if (actualHealing < amount) {
+      output = `${actualHealing} healed (${amount - actualHealing} overheal) → ${output}`;
+    }
+    if (Number(tempHp) > 0) {
+      output += ` (+${tempHp} temp)`;
+    }
+    addRoll({
+      creatureName: displayName,
+      rollType: 'damage',
+      rollName: 'Healing',
+      notation: `+${amount}`,
+      result: actualHealing,
+      output,
+    });
 
     // Refocus input
     setTimeout(() => hpInputRef.current?.focus(), 50);
