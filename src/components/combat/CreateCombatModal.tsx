@@ -332,8 +332,8 @@ export function CreateCombatModal({
         />
 
         {/* Action Buttons */}
-        <Group justify="flex-end" gap="sm">
-          <Button variant="subtle" onClick={handleClose}>
+        <Group justify="flex-end" mt="md">
+          <Button variant="default" onClick={handleClose}>
             Cancel
           </Button>
           <Button
