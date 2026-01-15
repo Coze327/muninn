@@ -883,6 +883,7 @@ export default function CampaignDetailPage() {
           onClose={closeCreateModal}
           onCreated={handleCombatCreated}
           campaignId={campaignId}
+          gameSystem={campaign.gameSystem}
         />
 
         <EditCombatModal
