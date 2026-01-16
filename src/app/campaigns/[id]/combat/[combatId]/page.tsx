@@ -427,6 +427,12 @@ export default function CombatTrackerPage() {
   function RollHistoryContent() {
     const { rolls, clearHistory } = useRollHistory();
 
+    // Look up creature by ID to get token color
+    const getCreatureTokenColor = (creatureId: string): string | null => {
+      const creature = sortedCreatures.find((c) => c.id === creatureId);
+      return creature?.tokenColor || null;
+    };
+
     // Get color based on roll type
     const getRollTypeColor = (rollType: string, rollName: string) => {
       // Special case: differentiate damage vs healing
@@ -481,8 +487,17 @@ export default function CombatTrackerPage() {
           <Stack gap='xs'>
             {rolls.map((roll) => {
               const color = getRollTypeColor(roll.rollType, roll.rollName);
+              const tokenColor = getCreatureTokenColor(roll.creatureId);
               return (
-                <Paper key={roll.id} withBorder p='xs'>
+                <Paper
+                  key={roll.id}
+                  withBorder
+                  p='xs'
+                  style={
+                    tokenColor
+                      ? { borderLeft: `4px solid ${tokenColor}` }
+                      : undefined
+                  }>
                   <Group justify='space-between' mb={4}>
                     <Group gap='xs'>
                       <Badge size='xs' color={color} variant='light'>

@@ -122,6 +122,7 @@ export function useDiceRoller() {
 
       // Add to history
       addRoll({
+        creatureId: options.creatureId,
         creatureName: options.creatureName,
         rollType: options.rollType,
         rollName: options.rollName,

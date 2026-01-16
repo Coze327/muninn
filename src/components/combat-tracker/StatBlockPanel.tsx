@@ -109,6 +109,7 @@ export function StatBlockPanel({ creature }: StatBlockPanelProps) {
       : creature.name;
 
     roll(finalNotation, {
+      creatureId: creature.id,
       creatureName: displayName,
       rollType,
       rollName,

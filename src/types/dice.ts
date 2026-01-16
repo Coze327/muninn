@@ -7,6 +7,7 @@ export type RollType = 'ability' | 'save' | 'skill' | 'attack' | 'damage';
 export type RollEntry = {
   id: string;
   timestamp: Date;
+  creatureId: string;
   creatureName: string;
   rollType: RollType;
   rollName: string;
@@ -16,6 +17,7 @@ export type RollEntry = {
 };
 
 export type RollOptions = {
+  creatureId: string;
   creatureName: string;
   rollType: RollType;
   rollName: string;

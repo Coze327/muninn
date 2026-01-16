@@ -390,6 +390,7 @@ export function SpellsTab({
             onClick={() => {
               const notation = `1d20+${spellcastingData.attack_bonus}`;
               roll(notation, {
+                creatureId,
                 creatureName,
                 rollType: 'attack',
                 rollName: 'Spell Attack',
@@ -695,6 +696,7 @@ export function SpellsTab({
                                           }
                                           if (damageNotation) {
                                             roll(damageNotation, {
+                                              creatureId,
                                               creatureName,
                                               rollType: 'damage',
                                               rollName: `${spellName} - Damage`,
@@ -961,6 +963,7 @@ export function SpellsTab({
                                             : details.damage?.damage_at_slot_level?.['1'] || '';
                                         if (damageNotation) {
                                           roll(damageNotation, {
+                                            creatureId,
                                             creatureName,
                                             rollType: 'damage',
                                             rollName: `${spellName} - Damage`,

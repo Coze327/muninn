@@ -243,6 +243,7 @@ export function EditableFieldsPanel({
       output += ` (+${newTempHp} temp)`;
     }
     addRoll({
+      creatureId: creature.id,
       creatureName: displayName,
       rollType: 'damage',
       rollName: 'Damage Taken',
@@ -260,6 +261,7 @@ export function EditableFieldsPanel({
         const dc = Math.max(10, Math.floor(amount / 2));
 
         roll(`1d20+${conModifier}`, {
+          creatureId: creature.id,
           creatureName: displayName,
           rollType: 'save',
           rollName: `Concentration (DC ${dc})`,
@@ -327,6 +329,7 @@ export function EditableFieldsPanel({
       output += ` (+${tempHp} temp)`;
     }
     addRoll({
+      creatureId: creature.id,
       creatureName: displayName,
       rollType: 'damage',
       rollName: 'Healing',

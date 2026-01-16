@@ -65,6 +65,7 @@ export function ActionsPanel({ creature, onCreatureUpdate }: ActionsPanelProps) 
     }
 
     roll(finalNotation, {
+      creatureId: creature.id,
       creatureName: displayName,
       rollType,
       rollName: `${actionName} - ${finalRollName}`,
